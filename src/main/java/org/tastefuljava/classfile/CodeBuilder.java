@@ -1,7 +1,14 @@
 package org.tastefuljava.classfile;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class CodeBuilder extends ByteArrayOutputStream {
     private final ConstantPool cp;

@@ -1,5 +1,17 @@
 package org.tastefuljava.classfile;
-import java.io.*;
+
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

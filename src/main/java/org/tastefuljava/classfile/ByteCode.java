@@ -168,7 +168,7 @@ public class ByteCode {
     public static final int IF_ICMPLE = 164;
     public static final int IF_ACMPEQ = 165;
     public static final int IF_ACMPNE = 166;
-    public static final int GOTO  = 167;
+    public static final int GOTO = 167;
     public static final int JSR = 168;
     public static final int RET = 169;
     public static final int TABLESWITCH = 170;
