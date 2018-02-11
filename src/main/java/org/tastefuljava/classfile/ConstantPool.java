@@ -4,32 +4,33 @@ import java.util.*;
 
 public class ConstantPool {
     /** constant tag */
-    private static final int CONSTANT_Class = 7;
+    private static final int CP_CLASS = 7;
     /** constant tag */
-    private static final int CONSTANT_Fieldref = 9;
+    private static final int CP_FIELDREF = 9;
     /** constant tag */
-    private static final int CONSTANT_Methodref = 10;
+    private static final int CP_METHODREF = 10;
     /** constant tag */
-    private static final int CONSTANT_InterfaceMethodref = 11;
+    private static final int CP_INTERFACEMETHODREF = 11;
     /** constant tag */
-    private static final int CONSTANT_String = 8;
+    private static final int CP_STRING = 8;
     /** constant tag */
-    private static final int CONSTANT_Integer = 3;
+    private static final int CP_INTEGER = 3;
     /** constant tag */
-    private static final int CONSTANT_Float = 4;
+    private static final int CP_FLOAT = 4;
     /** constant tag */
-    private static final int CONSTANT_Long = 5;
+    private static final int CP_LONG = 5;
     /** constant tag */
-    private static final int CONSTANT_Double = 6;
+    private static final int CP_DOUBLE = 6;
     /** constant tag */
-    private static final int CONSTANT_NameAndType = 12;
+    private static final int CP_NAMEANDTYPE = 12;
     /** constant tag */
-    private static final int CONSTANT_Utf8 = 1;
+    private static final int CP_UTF8 = 1;
 
     /** list of the constant pool entries */
-    private ArrayList entries = new ArrayList();
+    private List<Entry> entries = new ArrayList<>();
 
     public ConstantPool() {
+        entries.add(NullEntry.INSTANCE);
     }
 
     public int getCount() {
@@ -197,52 +198,52 @@ public class ConstantPool {
     public void load(DataInput input) throws IOException {
         short count = input.readShort();
         entries.clear();
-        entries.add(NullEntry.instance);
+        entries.add(NullEntry.INSTANCE);
         for (int i = 1; i < count; ++i) {
             int tag = input.readByte();
             Entry entry;
             switch (tag) {
-            case CONSTANT_Class:
+            case CP_CLASS:
                 entry = new ClassEntry();
                 break;
 
-            case CONSTANT_Fieldref:
+            case CP_FIELDREF:
                 entry = new FieldrefEntry();
                 break;
 
-            case CONSTANT_Methodref:
+            case CP_METHODREF:
                 entry = new MethodrefEntry();
                 break;
 
-            case CONSTANT_InterfaceMethodref:
+            case CP_INTERFACEMETHODREF:
                 entry = new InterfaceMethodrefEntry();
                 break;
 
-            case CONSTANT_String:
+            case CP_STRING:
                 entry = new StringEntry();
                 break;
 
-            case CONSTANT_Integer:
+            case CP_INTEGER:
                 entry = new IntegerEntry();
                 break;
 
-            case CONSTANT_Float:
+            case CP_FLOAT:
                 entry = new FloatEntry();
                 break;
 
-            case CONSTANT_Long:
+            case CP_LONG:
                 entry = new LongEntry();
                 break;
 
-            case CONSTANT_Double:
+            case CP_DOUBLE:
                 entry = new DoubleEntry();
                 break;
 
-            case CONSTANT_NameAndType:
+            case CP_NAMEANDTYPE:
                 entry = new NameAndTypeEntry();
                 break;
 
-            case CONSTANT_Utf8:
+            case CP_UTF8:
                 entry = new Utf8Entry();
                 break;
 
@@ -253,8 +254,8 @@ public class ConstantPool {
 
             entry.load(input);
             entries.add(entry);
-            if (tag == CONSTANT_Long || tag == CONSTANT_Double) {
-                entries.add(NullEntry.instance);
+            if (tag == CP_LONG || tag == CP_DOUBLE) {
+                entries.add(NullEntry.INSTANCE);
                 ++i;
             }
         }
@@ -262,17 +263,16 @@ public class ConstantPool {
 
     public void store(DataOutput output) throws IOException {
         output.writeShort(entries.size());
-        for (int i = 0; i < entries.size(); ++i) {
-            Entry entry = (Entry)entries.get(i);
-
+        for (Entry entry: entries) {
             entry.store(output);
         }
     }
 
     public void print(PrintStream out) {
-        out.println("number of entries: " + getCount());
-        for (int i = 1; i < getCount(); ++i) {
-            out.println(Integer.toString(i) + " = " + toString((short)i));
+        out.println("number of entries: " + entries.size());
+        int i = 0;
+        for (Entry entry: entries) {
+            out.println(Integer.toString(i++) + " = " + entry.toString(this));
         }
     }
 
@@ -294,20 +294,29 @@ public class ConstantPool {
     }
 
     private static class NullEntry extends Entry {
-        static NullEntry instance = new NullEntry();
+        private static final NullEntry INSTANCE = new NullEntry();
 
+        @Override
         public boolean equals(Object obj) {
             return false;
         }
 
+        @Override
         void load(DataInput input) {
         }
 
+        @Override
         void store(DataOutput output) {
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return "";
+        }
+
+        @Override
+        public int hashCode() {
+            return 0;
         }
     }
 
@@ -321,6 +330,7 @@ public class ConstantPool {
             this.nameIndex = nameIndex;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof ClassEntry) {
                 ClassEntry other = (ClassEntry)obj;
@@ -330,15 +340,23 @@ public class ConstantPool {
             }
         }
 
+        @Override
+        public int hashCode() {
+            return nameIndex;
+        }
+
+        @Override
         void load(DataInput input) throws IOException {
             nameIndex = input.readShort();
         }
 
+        @Override
         void store(DataOutput output) throws IOException {
-            output.writeByte(CONSTANT_Class);
+            output.writeByte(CP_CLASS);
             output.writeShort(nameIndex);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return "class " + cp.toString(nameIndex);
         }
@@ -356,6 +374,7 @@ public class ConstantPool {
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj.getClass() == this.getClass()) {
                 RefEntry other = (RefEntry)obj;
@@ -366,11 +385,21 @@ public class ConstantPool {
             }
         }
 
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 59 * hash + this.classIndex;
+            hash = 59 * hash + this.nameAndTypeIndex;
+            return hash;
+        }
+
+        @Override
         void load(DataInput input) throws IOException {
             classIndex = input.readShort();
             nameAndTypeIndex = input.readShort();
         }
 
+        @Override
         void store(DataOutput output) throws IOException {
             output.writeByte(getTag());
             output.writeShort(classIndex);
@@ -379,6 +408,7 @@ public class ConstantPool {
 
         abstract int getTag();
 
+        @Override
         String toString(ConstantPool cp) {
             return cp.getClassName(classIndex).replace('/','.')
                 + cp.getName(nameAndTypeIndex) + " "
@@ -395,12 +425,14 @@ public class ConstantPool {
             super(classIndex, nameAndTypeIndex);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return "fieldref " + super.toString(cp);
         }
 
+        @Override
         int getTag() {
-            return CONSTANT_Fieldref;
+            return CP_FIELDREF;
         }
     }
 
@@ -413,12 +445,14 @@ public class ConstantPool {
             super(classIndex, nameAndTypeIndex);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return "methodref " + super.toString(cp);
         }
 
+        @Override
         int getTag() {
-            return CONSTANT_Methodref;
+            return CP_METHODREF;
         }
     }
 
@@ -431,12 +465,14 @@ public class ConstantPool {
             super(classIndex, nameAndTypeIndex);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return "interfacemethodref " + super.toString(cp);
         }
 
+        @Override
         int getTag() {
-            return CONSTANT_InterfaceMethodref;
+            return CP_INTERFACEMETHODREF;
         }
     }
 
@@ -450,6 +486,7 @@ public class ConstantPool {
             this.stringIndex = stringIndex;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof StringEntry) {
                 StringEntry other = (StringEntry)obj;
@@ -459,15 +496,23 @@ public class ConstantPool {
             }
         }
 
+        @Override
+        public int hashCode() {
+            return stringIndex;
+        }
+
+        @Override
         void load(DataInput input) throws IOException {
             stringIndex = input.readShort();
         }
 
+        @Override
         void store(DataOutput output) throws IOException {
-            output.writeByte(CONSTANT_String);
+            output.writeByte(CP_STRING);
             output.writeShort(stringIndex);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return '"' + cp.toString(stringIndex) + '"';
         }
@@ -483,6 +528,7 @@ public class ConstantPool {
             this.value = value;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof IntegerEntry) {
                 IntegerEntry other = (IntegerEntry)obj;
@@ -492,15 +538,23 @@ public class ConstantPool {
             }
         }
 
+        @Override
+        public int hashCode() {
+            return Integer.hashCode(value);
+        }
+
+        @Override
         void load(DataInput input) throws IOException {
             value = input.readInt();
         }
 
+        @Override
         void store(DataOutput output) throws IOException {
-            output.writeByte(CONSTANT_Integer);
+            output.writeByte(CP_INTEGER);
             output.writeInt(value);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return "int " + Integer.toString(value);
         }
@@ -516,6 +570,7 @@ public class ConstantPool {
             this.value = value;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof FloatEntry) {
                 FloatEntry other = (FloatEntry)obj;
@@ -525,15 +580,23 @@ public class ConstantPool {
             }
         }
 
+        @Override
+        public int hashCode() {
+            return Float.hashCode(value);
+        }
+
+        @Override
         void load(DataInput input) throws IOException {
             value = input.readFloat();
         }
 
+        @Override
         void store(DataOutput output) throws IOException {
-            output.writeByte(CONSTANT_Float);
+            output.writeByte(CP_FLOAT);
             output.writeFloat(value);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return "float " + Float.toString(value);
         }
@@ -549,6 +612,7 @@ public class ConstantPool {
             this.value = value;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof LongEntry) {
                 LongEntry other = (LongEntry)obj;
@@ -558,15 +622,23 @@ public class ConstantPool {
             }
         }
 
+        @Override
+        public int hashCode() {
+            return Long.hashCode(value);
+        }
+
+        @Override
         void load(DataInput input) throws IOException {
             value = input.readLong();
         }
 
+        @Override
         void store(DataOutput output) throws IOException {
-            output.writeByte(CONSTANT_Long);
+            output.writeByte(CP_LONG);
             output.writeLong(value);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return "long " + Long.toString(value);
         }
@@ -582,6 +654,7 @@ public class ConstantPool {
             this.value = value;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof DoubleEntry) {
                 DoubleEntry other = (DoubleEntry)obj;
@@ -591,15 +664,23 @@ public class ConstantPool {
             }
         }
 
+        @Override
+        public int hashCode() {
+            return Double.hashCode(value);
+        }
+
+        @Override
         void load(DataInput input) throws IOException {
             value = input.readDouble();
         }
 
+        @Override
         void store(DataOutput output) throws IOException {
-            output.writeByte(CONSTANT_Double);
+            output.writeByte(CP_DOUBLE);
             output.writeDouble(value);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return "double " + Double.toString(value);
         }
@@ -617,6 +698,7 @@ public class ConstantPool {
             this.descrIndex = descrIndex;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof NameAndTypeEntry) {
                 NameAndTypeEntry other = (NameAndTypeEntry)obj;
@@ -627,17 +709,28 @@ public class ConstantPool {
             }
         }
 
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 89 * hash + this.nameIndex;
+            hash = 89 * hash + this.descrIndex;
+            return hash;
+        }
+
+        @Override
         void load(DataInput input) throws IOException {
             nameIndex = input.readShort();
             descrIndex = input.readShort();
         }
 
+        @Override
         void store(DataOutput output) throws IOException {
-            output.writeByte(CONSTANT_NameAndType);
+            output.writeByte(CP_NAMEANDTYPE);
             output.writeShort(nameIndex);
             output.writeShort(descrIndex);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return cp.getUtf8(nameIndex) + " " + cp.getUtf8(descrIndex);
         }
@@ -653,6 +746,7 @@ public class ConstantPool {
             this.value = value;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof Utf8Entry) {
                 Utf8Entry other = (Utf8Entry)obj;
@@ -662,15 +756,23 @@ public class ConstantPool {
             }
         }
 
+        @Override
+        public int hashCode() {
+            return value == null ? 0 : value.hashCode();
+        }
+
+        @Override
         void load(DataInput input) throws IOException {
             value = input.readUTF();
         }
 
+        @Override
         void store(DataOutput output) throws IOException {
-            output.writeByte(CONSTANT_Utf8);
+            output.writeByte(CP_UTF8);
             output.writeUTF(value);
         }
 
+        @Override
         String toString(ConstantPool cp) {
             return value;
         }

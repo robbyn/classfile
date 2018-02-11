@@ -1,5 +1,7 @@
 package org.tastefuljava.classfile;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MethodInfo {
     /** access flag */
@@ -24,7 +26,7 @@ public class MethodInfo {
     private short accessFlags;
     private short nameIndex;
     private short descrIndex;
-    private AttributeInfo attributes[] = new AttributeInfo[0];
+    private List<AttributeInfo> attributes = new ArrayList<>();
 
     public MethodInfo() {
     }
@@ -60,21 +62,17 @@ public class MethodInfo {
     }
 
     public AttributeInfo[] getAttributes() {
-        return attributes;
+        return attributes.toArray(new AttributeInfo[attributes.size()]);
     }
 
     public void addAttribute(AttributeInfo attr) {
-        int len = attributes.length;
-        AttributeInfo attributes2[] = new AttributeInfo[len+1];
-        System.arraycopy(attributes, 0, attributes2, 0, len);
-        attributes2[len] = attr;
-        attributes = attributes2;
+        attributes.add(attr);
     }
 
     public AttributeInfo findAttribute(short nameIndex) {
-        for (int i = 0; i < attributes.length; ++i) {
-            if (attributes[i].getNameIndex() == nameIndex) {
-                return attributes[i];
+        for (AttributeInfo attr: attributes) {
+            if (attr.getNameIndex() == nameIndex) {
+                return attr;
             }
         }
         return null;
@@ -104,61 +102,61 @@ public class MethodInfo {
     }
 
     private static String flagsToString(int flags) {
-        StringBuffer buff = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         if ((ACC_PUBLIC & flags) != 0) {
-            if (buff.length() > 0) {
-                buff.append(',');
+            if (buf.length() > 0) {
+                buf.append(',');
             }
-            buff.append("ACC_PUBLIC");
+            buf.append("ACC_PUBLIC");
         }
         if ((ACC_PRIVATE & flags) != 0) {
-            if (buff.length() > 0) {
-                buff.append(',');
+            if (buf.length() > 0) {
+                buf.append(',');
             }
-            buff.append("ACC_PRIVATE");
+            buf.append("ACC_PRIVATE");
         }
         if ((ACC_PROTECTED & flags) != 0) {
-            if (buff.length() > 0) {
-                buff.append(',');
+            if (buf.length() > 0) {
+                buf.append(',');
             }
-            buff.append("ACC_PROTECTED");
+            buf.append("ACC_PROTECTED");
         }
         if ((ACC_STATIC & flags) != 0) {
-            if (buff.length() > 0) {
-                buff.append(',');
+            if (buf.length() > 0) {
+                buf.append(',');
             }
-            buff.append("ACC_STATIC");
+            buf.append("ACC_STATIC");
         }
         if ((ACC_FINAL & flags) != 0) {
-            if (buff.length() > 0) {
-                buff.append(',');
+            if (buf.length() > 0) {
+                buf.append(',');
             }
-            buff.append("ACC_FINAL");
+            buf.append("ACC_FINAL");
         }
         if ((ACC_SYNCHRONIZED & flags) != 0) {
-            if (buff.length() > 0) {
-                buff.append(',');
+            if (buf.length() > 0) {
+                buf.append(',');
             }
-            buff.append("ACC_SYNCHRONIZED");
+            buf.append("ACC_SYNCHRONIZED");
         }
         if ((ACC_NATIVE & flags) != 0) {
-            if (buff.length() > 0) {
-                buff.append(',');
+            if (buf.length() > 0) {
+                buf.append(',');
             }
-            buff.append("ACC_NATIVE");
+            buf.append("ACC_NATIVE");
         }
         if ((ACC_ABSTRACT & flags) != 0) {
-            if (buff.length() > 0) {
-                buff.append(',');
+            if (buf.length() > 0) {
+                buf.append(',');
             }
-            buff.append("ACC_ABSTRACT");
+            buf.append("ACC_ABSTRACT");
         }
         if ((ACC_STRICT & flags) != 0) {
-            if (buff.length() > 0) {
-                buff.append(',');
+            if (buf.length() > 0) {
+                buf.append(',');
             }
-            buff.append("ACC_STRICT");
+            buf.append("ACC_STRICT");
         }
-        return buff.toString();
+        return buf.toString();
     }
 }

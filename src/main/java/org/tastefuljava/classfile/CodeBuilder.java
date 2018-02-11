@@ -3,11 +3,11 @@ package org.tastefuljava.classfile;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CodeBuilder extends ByteArrayOutputStream {
@@ -48,7 +48,8 @@ public class CodeBuilder extends ByteArrayOutputStream {
             ei.load(input);
             exceptions.add(ei);
         }
-        attributes.addAll(Arrays.asList(AttributeInfo.loadList(input)));
+        attributes.clear();
+        attributes.addAll(AttributeInfo.loadList(input));
     }
 
     public void store(DataOutput output) throws IOException {
@@ -64,8 +65,15 @@ public class CodeBuilder extends ByteArrayOutputStream {
         for (ExceptionInfo ei: exceptions) {
             ei.store(output);
         }
-        AttributeInfo.storeList(output, attributes.toArray(
-                new AttributeInfo[attributes.size()]));
+        AttributeInfo.storeList(output, attributes);
+    }
+
+    public byte[] getBytes() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (DataOutputStream dos = new DataOutputStream(baos)) {
+            store(dos);
+        }
+        return baos.toByteArray();
     }
 
     public int getLength() {
@@ -717,7 +725,7 @@ public class CodeBuilder extends ByteArrayOutputStream {
         invokeStatic(cp.addMethodref(className, name, type));
     }
 
-    public void retrn() {
+    public void returnVoid() {
         write(ByteCode.RETURN);
     }
 

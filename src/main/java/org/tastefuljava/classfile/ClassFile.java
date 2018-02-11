@@ -1,5 +1,6 @@
 package org.tastefuljava.classfile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
@@ -12,12 +13,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StreamCorruptedException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ClassFile {
-    /** class file magic number */
+   public static final Logger LOG = Logger.getLogger(ClassFile.class.getName());
+
+   /** class file magic number */
     public static final int MAGIC = 0xCAFEBABE;
     /** access flag */
     public static final short ACC_PUBLIC = 0x0001;
@@ -242,8 +248,34 @@ public class ClassFile {
         storeAttributes(output);
     }
 
+    public byte[] toBytes() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        store(baos);
+        return baos.toByteArray();
+    }
+
+    public Class<?> define() {
+        return define(Thread.currentThread().getContextClassLoader());
+    }
+
+    public Class<?> define(ClassLoader cl) {
+        try {
+            Method method = ClassLoader.class.getDeclaredMethod("defineClass",
+                    String.class, byte[].class, int.class, int.class);
+            method.setAccessible(true);
+            byte[] buf = toBytes();
+            return (Class<?>)method.invoke(
+                    cl, getClassName(), buf, 0, buf.length);
+        } catch (NoSuchMethodException | SecurityException | IOException
+                | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new ClassFileException(ex.getMessage());
+        }
+    }
+ 
     public void print(PrintStream out) throws IOException {
-        out.println("minor_version = " + minorVersion);
+        out.println("minor_version = " + majorVersion);
         out.println("major_version = " + minorVersion);
         out.print("access_flags =" + flagsToString(accessFlags));
         out.println();
@@ -314,6 +346,7 @@ public class ClassFile {
         for (int i = 0; i < count; ++i) {
             MethodInfo mi = new MethodInfo();
             mi.load(input);
+            methods.add(mi);
         }
     }
 
@@ -333,16 +366,15 @@ public class ClassFile {
     }
 
     private void loadAttributes(DataInput input) throws IOException {
-        attributes.clear();
-        attributes.addAll(Arrays.asList(AttributeInfo.loadList(input)));
+        attributes = AttributeInfo.loadList(input);
     }
 
     private void storeAttributes(DataOutput output) throws IOException {
-        AttributeInfo.storeList(output, getAttributes());
+        AttributeInfo.storeList(output, attributes);
     }
 
     private void printAttributes(PrintStream out) throws IOException {
-        AttributeInfo.printList(cp, out, getAttributes());
+        AttributeInfo.printList(cp, out, attributes);
     }
 
     public static String flagsToString(int flags) {

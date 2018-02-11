@@ -1,5 +1,7 @@
 package org.tastefuljava.classfile;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FieldInfo {
     /** access flag */
@@ -22,7 +24,7 @@ public class FieldInfo {
     private short accessFlags;
     private short nameIndex;
     private short typeIndex;
-    private AttributeInfo attributes[] = new AttributeInfo[0];
+    private final List<AttributeInfo> attributes = new ArrayList<>();
 
     public FieldInfo(int accessFlags, short nameIndex, short typeIndex) {
         this.accessFlags = (short)accessFlags;
@@ -58,22 +60,19 @@ public class FieldInfo {
     }
 
     public AttributeInfo[] getAttributes() {
-        return attributes;
+        return attributes.toArray(new AttributeInfo[attributes.size()]);
     }
 
     public void addAttribute(AttributeInfo attr) {
-        int len = attributes.length;
-        AttributeInfo attributes2[] = new AttributeInfo[len+1];
-        System.arraycopy(attributes, 0, attributes2, 0, len);
-        attributes2[len] = attr;
-        attributes = attributes2;
+        attributes.add(attr);
     }
 
     void load(DataInput input) throws IOException {
         accessFlags = input.readShort();
         nameIndex = input.readShort();
         typeIndex = input.readShort();
-        attributes = AttributeInfo.loadList(input);
+        attributes.clear();
+        attributes.addAll(AttributeInfo.loadList(input));
     }
 
     void store(DataOutput output) throws IOException {

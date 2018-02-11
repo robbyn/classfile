@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AttributeInfo {
     private short nameIndex;
@@ -67,11 +69,14 @@ public class AttributeInfo {
         input.readFully(data);
     }
 
-    public static AttributeInfo[] loadList(DataInput input) throws IOException {
-        AttributeInfo result[] = new AttributeInfo[input.readShort()];
-        for (int i = 0; i < result.length; ++i) {
-            result[i] = new AttributeInfo();
-            result[i].load(input);
+    public static List<AttributeInfo> loadList(DataInput input)
+            throws IOException {
+        int count = input.readShort() & 0xFFFF;
+        List<AttributeInfo> result = new ArrayList<>(count);
+        for (int i = 0; i < count; ++i) {
+            AttributeInfo attr = new AttributeInfo();
+            attr.load(input);
+            result.add(attr);
         }
         return result;
     }
@@ -82,11 +87,11 @@ public class AttributeInfo {
         output.write(data);
     }
 
-    public static void storeList(DataOutput output, AttributeInfo array[])
+    public static void storeList(DataOutput output, List<AttributeInfo> list)
             throws IOException {
-        output.writeShort(array.length);
-        for (int i = 0; i < array.length; ++i) {
-            array[i].store(output);
+        output.writeShort(list.size());
+        for (AttributeInfo attr: list) {
+            attr.store(output);
         }
     }
 
@@ -96,10 +101,10 @@ public class AttributeInfo {
     }
 
     public static void printList(ConstantPool cp, PrintStream out,
-            AttributeInfo array[]) throws IOException {
-        out.println("Attributes: " + array.length);
-        for (int i = 0; i < array.length; ++i) {
-            array[i].print(cp, out);
+            List<AttributeInfo> list) throws IOException {
+        out.println("Attributes: " + list.size());
+        for (AttributeInfo attr: list) {
+            attr.print(cp, out);
         }
         out.println();
     }
