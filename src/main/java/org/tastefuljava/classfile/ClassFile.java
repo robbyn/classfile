@@ -54,6 +54,15 @@ public class ClassFile {
     public ClassFile() {
     }
 
+    public ClassFile(String className) {
+        this(className, "java/lang/Object");
+    }
+
+    public ClassFile(String className, String superClassName) {
+        thisClass = cp.addClass(className);
+        superClass = cp.addClass(superClassName);
+    }
+
     public short getMinorVersion() {
         return minorVersion;
     }
