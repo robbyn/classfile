@@ -37,7 +37,7 @@ public class ClassFile {
     /** constant pool */
     private final ConstantPool cp = new ConstantPool();
     /** access flags */
-    private short accessFlags;
+    private short accessFlags = ACC_PUBLIC;
     /** index in the constant pool of this class */
     private short thisClass;
     /** index in the constant pool of the superclass */
