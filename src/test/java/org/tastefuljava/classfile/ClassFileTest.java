@@ -54,7 +54,8 @@ public class ClassFileTest {
             CodeBuilder cb = new CodeBuilder(cp, 1);
             cb.getStatic("java/lang/System", "out", "Ljava/io/PrintStream;");
             cb.pushString("Hello world!!!");
-            cb.invokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V");
+            cb.invokeVirtual(
+                    "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
             cb.returnVoid();
             AttributeInfo code = new AttributeInfo(
                     cp.addUtf8("Code"), cb.getBytes());
