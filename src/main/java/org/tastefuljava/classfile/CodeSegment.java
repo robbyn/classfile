@@ -18,8 +18,12 @@ public class CodeSegment extends ByteArrayOutputStream {
     protected short stackMax;
     protected final List<Label> labels = new ArrayList<>();
 
-    public CodeSegment(ConstantPool cp) {
+    protected CodeSegment(ConstantPool cp) {
         this.cp = cp;
+    }
+
+    public CodeSegment newSegment() {
+        return new CodeSegment(cp);
     }
 
     public short getStackMax() {
