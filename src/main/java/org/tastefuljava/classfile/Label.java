@@ -6,7 +6,7 @@ import java.util.List;
 public class Label {
     private boolean defined;
     private int location;
-    private List<LabelRef> refs;
+    private List<LabelRef> refs = new ArrayList<>();
 
     public Label() {
     }
@@ -25,17 +25,12 @@ public class Label {
     }
 
     void fixupRefs(CodeBuilder cb) {
-        if (refs != null) {
-            for (LabelRef ref: refs) {
-                ref.fixup(cb, location);
-            }
+        for (LabelRef ref: refs) {
+            ref.fixup(cb, location);
         }
     }
 
     void addRef(LabelRef ref) {
-        if (refs == null) {
-            refs = new ArrayList<>();
-        }
         refs.add(ref);
     }
 }
