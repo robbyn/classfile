@@ -16,7 +16,6 @@ import java.util.List;
 public class AttributeInfo {
     private short nameIndex;
     private byte data[];
-    private static byte info;
 
     private AttributeInfo() {
     }
