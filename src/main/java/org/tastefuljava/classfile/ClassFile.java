@@ -41,7 +41,7 @@ public class ClassFile {
     /** major version number */
     private short majorVersion;
     /** constant pool */
-    private final ConstantPool cp = new ConstantPool();
+    private final ConstantPool cp;
     /** access flags */
     private short accessFlags = ACC_PUBLIC;
     /** index in the constant pool of this class */
@@ -58,13 +58,16 @@ public class ClassFile {
     List<AttributeInfo> attributes = new ArrayList<>();
 
     public ClassFile() {
+        cp = new ConstantPool();
     }
 
-    public ClassFile(String className) {
-        this(className, "java/lang/Object");
+    public ClassFile(ConstantPool cp, String className) {
+        this(cp, className, "java/lang/Object");
     }
 
-    public ClassFile(String className, String superClassName) {
+    public ClassFile(ConstantPool cp, String className,
+            String superClassName) {
+        this.cp = cp;
         thisClass = cp.addClass(className);
         superClass = cp.addClass(superClassName);
     }

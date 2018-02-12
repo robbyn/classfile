@@ -30,7 +30,7 @@ public class ClassFileTest {
     @Test
     public void testRunnable()
             throws IllegalAccessException, InstantiationException, IOException {
-        ClassFile cf = new ClassFile("TestCase$0001");
+        ClassFile cf = new ClassFile(new ConstantPool(), "TestCase$0001");
         cf.addInterface("java/lang/Runnable");
         cf.setMajorVersion((short)48);
 
