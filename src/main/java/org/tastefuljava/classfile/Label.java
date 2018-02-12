@@ -21,7 +21,10 @@ public class Label {
 
     public Label copy(int offset) {
         Label copy = new Label();
-        copy.location = location + offset;
+        if (!isDefined()) {
+            throw new ClassFileException("Undefined label");
+        }
+        copy.define(location + offset);
         for (LabelRef ref: refs) {
             copy.refs.add(ref.copy(offset));
         }
