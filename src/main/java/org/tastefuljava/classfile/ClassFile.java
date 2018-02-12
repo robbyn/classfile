@@ -230,7 +230,6 @@ public class ClassFile {
     }
 
     public void store(File file) throws IOException {
-        file.getParentFile().mkdirs();
         try (OutputStream stream = new FileOutputStream(file)) {
             store(stream);
         }
