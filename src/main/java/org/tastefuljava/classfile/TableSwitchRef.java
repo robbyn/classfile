@@ -13,4 +13,9 @@ public class TableSwitchRef extends LabelRef {
     public void fixup(CodeBuilder cb, int location) {
         cb.fixupInt(refLocation, location - opLocation);
     }
+
+    @Override
+    public LabelRef copy(int offset) {
+        return new TableSwitchRef(opLocation + offset, refLocation + offset);
+    }
 }
