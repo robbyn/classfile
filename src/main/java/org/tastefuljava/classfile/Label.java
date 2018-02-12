@@ -1,9 +1,12 @@
 package org.tastefuljava.classfile;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Label {
     private boolean defined;
     private int location;
-    private LabelRef refs[];
+    private List<LabelRef> refs;
 
     public Label() {
     }
@@ -23,19 +26,16 @@ public class Label {
 
     void fixupRefs(CodeBuilder cb) {
         if (refs != null) {
-            for (int i = 0; i < refs.length; ++i) {
-                refs[i].fixup(cb, location);
+            for (LabelRef ref: refs) {
+                ref.fixup(cb, location);
             }
         }
     }
 
     void addRef(LabelRef ref) {
-        int len = refs == null ? 0 : refs.length;
-        LabelRef refs2[] = new LabelRef[len+1];
-        if (len > 0) {
-            System.arraycopy(refs, 0, refs2, 0, len);
+        if (refs == null) {
+            refs = new ArrayList<>();
         }
-        refs = refs2;
-        refs[len] = ref;
+        refs.add(ref);
     }
 }
