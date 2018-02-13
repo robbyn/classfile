@@ -17,13 +17,25 @@ public class CodeSegment extends ByteArrayOutputStream {
     protected short stackTop;
     protected short stackMax;
     protected final List<Label> labels = new ArrayList<>();
+    private final List<LabelRef> fixups = new ArrayList<>();
+    private final CodeSegment parent;
 
-    protected CodeSegment(ConstantPool cp) {
+    protected CodeSegment(ConstantPool cp, CodeSegment parent) {
         this.cp = cp;
+        this.parent = parent;
+    }
+
+    public void commit() {
+        for (Label label: labels) {
+            label.fixupRefs(this);
+        }
+        if (parent != null) {
+            parent.append(this);
+        }
     }
 
     public CodeSegment newSegment() {
-        return new CodeSegment(cp);
+        return new CodeSegment(cp, this);
     }
 
     public short getStackMax() {
@@ -42,14 +54,14 @@ public class CodeSegment extends ByteArrayOutputStream {
         count = newValue;
     }
 
-    public void append(CodeSegment other) {
+    private void append(CodeSegment other) {
         try {
-            int offset = getLocation();
             stackMax = (short)Math.max(stackMax, stackTop + other.stackMax);
             stackTop += other.stackTop;
             write(other.toByteArray());
-            for (Label label: other.labels) {
-                labels.add(label.copy(offset));
+            int offset = getLocation();
+            for (LabelRef ref: other.fixups) {
+                fixups.add(ref.copy(offset));
             }
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -1086,7 +1098,8 @@ public class CodeSegment extends ByteArrayOutputStream {
             default:
                 throw new InvalidInstructionException(opcode);
         }
-        label.addRef(new JumpRef(getLocation()));
+        LabelRef ref = new JumpRef(getLocation());
+        addRef(label, ref);
         write(opcode);
         writeShort(0);
     }
@@ -1100,12 +1113,12 @@ public class CodeSegment extends ByteArrayOutputStream {
         while ((getLocation() % 4) != 0) {
             write(0);
         }
-        def.addRef(new TableSwitchRef(opLocation, getLocation()));
+        addRef(def, new TableSwitchRef(opLocation, getLocation()));
         writeInt(0);
         writeInt(min);
         writeInt(max);
         for (int i = 0; i < table.length; ++i) {
-            table[i].addRef(new TableSwitchRef(opLocation, getLocation()));
+            addRef(table[i], new TableSwitchRef(opLocation, getLocation()));
             writeInt(0);
         }
     }
@@ -1224,5 +1237,13 @@ public class CodeSegment extends ByteArrayOutputStream {
             throw new Error(e.toString());
         }
     }
-    
+
+    void addRef(Label label, LabelRef ref) {
+        fixups.add(ref);
+        label.addRef(ref);
+    }
+
+    void removeRef(LabelRef ref) {
+        fixups.remove(ref);
+    }
 }

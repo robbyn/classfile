@@ -5,8 +5,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +15,7 @@ public class CodeBuilder extends CodeSegment {
     private final List<AttributeInfo> attributes = new ArrayList<>();
 
     public CodeBuilder(ConstantPool cp, int argsSize) {
-        super(cp);
+        super(cp, null);
         localTop = (short)argsSize;
         localMax = (short)argsSize;
     }
@@ -73,9 +71,7 @@ public class CodeBuilder extends CodeSegment {
 
     public void store(DataOutput output) throws IOException {
         /* fixup label references */
-        for (Label label: labels) {
-            label.fixupRefs(this);
-        }
+        commit();
         output.writeShort(stackMax);
         output.writeShort(localMax);
         output.writeInt(count);

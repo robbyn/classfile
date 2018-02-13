@@ -36,9 +36,10 @@ public class Label {
         location = newLoc;
     }
 
-    void fixupRefs(CodeBuilder cb) {
+    void fixupRefs(CodeSegment code) {
         for (LabelRef ref: refs) {
-            ref.fixup(cb, location);
+            ref.fixup(code, location);
+            code.removeRef(ref);
         }
     }
 

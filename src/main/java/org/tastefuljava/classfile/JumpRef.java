@@ -8,8 +8,8 @@ public class JumpRef extends LabelRef {
     }
 
     @Override
-    public void fixup(CodeBuilder cb, int location) {
-        cb.fixupShort(jumpLocation+1, location-jumpLocation);
+    public void fixup(CodeSegment code, int location) {
+        code.fixupShort(jumpLocation+1, location-jumpLocation);
     }
 
     @Override

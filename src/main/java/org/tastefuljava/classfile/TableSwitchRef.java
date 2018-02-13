@@ -10,8 +10,8 @@ public class TableSwitchRef extends LabelRef {
     }
 
     @Override
-    public void fixup(CodeBuilder cb, int location) {
-        cb.fixupInt(refLocation, location - opLocation);
+    public void fixup(CodeSegment code, int location) {
+        code.fixupInt(refLocation, location - opLocation);
     }
 
     @Override
