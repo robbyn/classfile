@@ -24,18 +24,9 @@ public class CodeBuilder extends CodeSegment {
         return localMax;
     }
 
-    public short newLocal() {
+    public short newLocal(int size) {
         short result = localTop;
-        ++localTop;
-        if (localTop > localMax) {
-            localMax = localTop;
-        }
-        return result;
-    }
-
-    public short newLocal2() {
-        short result = localTop;
-        localTop += 2;
+        localTop += size;
         if (localTop > localMax) {
             localMax = localTop;
         }
