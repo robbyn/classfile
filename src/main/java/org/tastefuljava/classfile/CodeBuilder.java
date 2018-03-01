@@ -9,36 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CodeBuilder extends CodeSegment {
-    private short localTop;
-    private short localMax;
     private final List<ExceptionInfo> exceptions = new ArrayList<>();
     private final List<AttributeInfo> attributes = new ArrayList<>();
 
-    public CodeBuilder(ConstantPool cp, int argsSize) {
-        super(cp, null);
-        localTop = (short)argsSize;
-        localMax = (short)argsSize;
-    }
-
-    public short getLocalMax() {
-        return localMax;
-    }
-
-    public short newLocal(int size) {
-        short result = localTop;
-        localTop += size;
-        if (localTop > localMax) {
-            localMax = localTop;
-        }
-        return result;
-    }
-
-    public short beginBlock() {
-        return localTop;
-    }
-
-    public void endBlock(short b) {
-        localTop = b;
+    public CodeBuilder(ConstantPool cp, int locals) {
+        super(cp, null, locals);
     }
 
     public void load(DataInput input) throws IOException {

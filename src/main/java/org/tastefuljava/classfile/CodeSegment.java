@@ -14,15 +14,39 @@ public class CodeSegment extends ByteArrayOutputStream {
             = Logger.getLogger(CodeSegment.class.getName());
 
     protected final ConstantPool cp;
+    protected short localTop;
+    protected short localMax;
     protected short stackTop;
     protected short stackMax;
     protected final List<Label> labels = new ArrayList<>();
     private final List<LabelRef> fixups = new ArrayList<>();
     private final CodeSegment parent;
 
-    protected CodeSegment(ConstantPool cp, CodeSegment parent) {
+    protected CodeSegment(ConstantPool cp, CodeSegment parent, int locals) {
         this.cp = cp;
         this.parent = parent;
+        this.localTop = this.localMax = (short)locals;
+    }
+
+    public short getLocalMax() {
+        return localMax;
+    }
+
+    public short newLocal(int size) {
+        short result = localTop;
+        localTop += size;
+        if (localTop > localMax) {
+            localMax = localTop;
+        }
+        return result;
+    }
+
+    public short beginBlock() {
+        return localTop;
+    }
+
+    public void endBlock(short b) {
+        localTop = b;
     }
 
     public void commit() {
@@ -35,7 +59,7 @@ public class CodeSegment extends ByteArrayOutputStream {
     }
 
     public CodeSegment newSegment() {
-        return new CodeSegment(cp, this);
+        return new CodeSegment(cp, this, localTop);
     }
 
     public short getStackMax() {
@@ -56,6 +80,7 @@ public class CodeSegment extends ByteArrayOutputStream {
 
     private void append(CodeSegment other) {
         try {
+            localMax = (short)Math.max(localMax, other.localMax);
             stackMax = (short)Math.max(stackMax, stackTop + other.stackMax);
             stackTop += other.stackTop;
             write(other.toByteArray());
