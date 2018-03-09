@@ -21,9 +21,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClassFile {
-   public static final Logger LOG = Logger.getLogger(ClassFile.class.getName());
+    public static final Logger LOG = Logger.getLogger(ClassFile.class.getName());
 
-   /** class file magic number */
+    /** class file magic number */
     public static final int MAGIC = 0xCAFEBABE;
     /** access flag */
     public static final short ACC_PUBLIC = 0x0001;
