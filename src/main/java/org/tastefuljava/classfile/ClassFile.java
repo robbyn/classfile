@@ -275,7 +275,7 @@ public class ClassFile {
             throw new ClassFileException(ex.getMessage());
         }
     }
- 
+
     public void print(PrintStream out) throws IOException {
         out.println("minor_version = " + majorVersion);
         out.println("major_version = " + minorVersion);
